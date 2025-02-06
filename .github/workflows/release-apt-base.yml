@@ -43,7 +43,7 @@ jobs:
           prerelease: false
           update_if_exists: true # La chiave per l'aggiornamento
 
-      - name: Debug: Release creation result
+      - name: Debug Release creation result
         if: steps.create_release.outcome == 'failure'
         run: |
           echo "Release update/creation failed. Check the logs for details."
