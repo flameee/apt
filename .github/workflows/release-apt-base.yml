@@ -12,6 +12,8 @@ jobs:
       # 1. Clona il repository
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # 2. Crea o aggiorna la release con tag fisso "apt-base-release"
       - name: Crea o aggiorna la release
@@ -24,12 +26,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3. (Opzionale) Carica degli asset (file) nella release
+      # 3. Crea l'archivio (ZIP) con i file aggiornati del repository
+      - name: Crea archivio della repository
+        run: zip -r apt-base.zip .
+
+      # 4. Carica l'archivio come asset nella release
       - name: Carica asset nella release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: 'apt-base-release'
-          # Specifica i percorsi dei file da allegare (se sono più file, separali con uno spazio o usa pattern glob)
           files: apt-base.zip
           replacesArtifacts: true
         env:
