@@ -17,17 +17,26 @@ jobs:
         id: get_tag
         run: |
           TAG="apt-base-latest"
-          echo "Trying to find tag $TAG"
-          if git show-ref --tags $TAG; then
-            echo "Tag $TAG found."
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Trying to find tag: $TAG"
+
+          # Controllo combinato locale e remoto:
+          if git show-ref --tags $TAG; then # Check locale
+            echo "Tag $TAG found locally."
+            if git ls-remote --tags origin $TAG; then # Check remoto
+              echo "Tag $TAG found remotely."
+              echo "tag=$TAG" >> $GITHUB_OUTPUT
+            else
+              echo "Tag $TAG found locally, but not remotely. Pushing..."
+              git push origin $TAG
+              echo "tag=$TAG" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "Tag $TAG not found. Creating it for the first time." # Più chiaro
+            echo "Tag $TAG not found locally. Creating and pushing it."
             git tag $TAG
-            git push origin $TAG # Push del tag appena creato
+            git push origin $TAG
             echo "tag=$TAG" >> $GITHUB_OUTPUT
           fi
-          echo "Tag value ${{ steps.get_tag.outputs.tag }}"
+          echo "Tag value: ${{ steps.get_tag.outputs.tag }}"
 
       - name: Create or update Release
         id: create_release
