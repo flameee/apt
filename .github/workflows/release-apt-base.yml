@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - apt-base
+      - main
 
 jobs:
   create-release:
