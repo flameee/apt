@@ -13,27 +13,23 @@ jobs:
       - name: Debug Branch
         run: echo "Push event on branch ${{ github.ref }}"
 
-      - name: Get or create tag
+      - name: Get or create tag (Atomic)
         id: get_tag
         run: |
           TAG="apt-base-latest"
-          echo "Trying to find tag: $TAG"
+          echo "Trying to find/create tag: $TAG"
 
-          # Controllo combinato locale e remoto:
-          if git show-ref --tags $TAG; then # Check locale
-            echo "Tag $TAG found locally."
-            if git ls-remote --tags origin $TAG; then # Check remoto
-              echo "Tag $TAG found remotely."
-              echo "tag=$TAG" >> $GITHUB_OUTPUT
-            else
-              echo "Tag $TAG found locally, but not remotely. Pushing..."
-              git push origin $TAG
-              echo "tag=$TAG" >> $GITHUB_OUTPUT
-            fi
+          # Tentativo atomico di push dei tag (crea il tag se non esiste):
+          if git push --tags origin $TAG; then # Tenta di pushare il tag
+            echo "Tag $TAG created or already existed and pushed successfully."
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          elif [[ $(git ls-remote --tags origin $TAG | wc -l) -eq 0 ]]; then # Check remoto se il push fallisce perche non esiste
+            echo "Tag $TAG not found remotely. Creating and pushing it."
+            git tag $TAG  # Crea il tag localmente
+            git push --tags origin $TAG # Tenta di pushare di nuovo
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
           else
-            echo "Tag $TAG not found locally. Creating and pushing it."
-            git tag $TAG
-            git push origin $TAG
+            echo "Tag $TAG already exists remotely. Skipping creation."
             echo "tag=$TAG" >> $GITHUB_OUTPUT
           fi
           echo "Tag value: ${{ steps.get_tag.outputs.tag }}"
