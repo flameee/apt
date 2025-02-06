@@ -13,7 +13,7 @@ jobs:
       - name: Get or create tag
         id: get_tag
         run: |
-          TAG="apt-base"
+          TAG="apt-base-release"
           if git show-ref --tags $TAG; then
             echo "tag=$TAG" >> $GITHUB_OUTPUT
           else
@@ -30,7 +30,7 @@ jobs:
           tag_name: ${{ steps.get_tag.outputs.tag }}
           release_name: Release ${{ steps.get_tag.outputs.tag }}
           body: |
-            Aggiornamento della release ${TAG}!
+            Aggiornamento della release
           draft: false
           prerelease: false
         if: github.event_name == 'push'
