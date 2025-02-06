@@ -20,9 +20,7 @@ jobs:
         with:
           tag: 'apt-base-release'
           name: 'apt-base-release'
-          # Puoi inserire una descrizione nel body se lo desideri:
-          # body: 'Release automatica aggiornata al commit ${{ github.sha }}'
-          update: true
+          allowUpdates: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
