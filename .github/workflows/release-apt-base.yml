@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Debug: Branch
-        run: echo "Push event on branch: ${{ github.ref }}"
+        run: echo "Push event on branch ${{ github.ref }}"
 
       - name: Get or create tag
         id: get_tag
