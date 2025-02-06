@@ -30,6 +30,7 @@ jobs:
         with:
           tag_name: 'apt-base-release'
           # Specifica i percorsi dei file da allegare (se sono più file, separali con uno spazio o usa pattern glob)
-          files: path/to/your/file.zip
+          files: apt-base.zip
+          replacesArtifacts: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
