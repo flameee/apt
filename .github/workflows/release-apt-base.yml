@@ -17,22 +17,26 @@ jobs:
         id: get_tag
         run: |
           TAG="apt-base-latest"
-          echo "Trying to find/create tag: $TAG"
+          # ... (codice per la gestione atomica del tag, come nella risposta precedente)
 
-          # Tentativo atomico di push dei tag (crea il tag se non esiste):
-          if git push --tags origin $TAG; then # Tenta di pushare il tag
-            echo "Tag $TAG created or already existed and pushed successfully."
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
-          elif [[ $(git ls-remote --tags origin $TAG | wc -l) -eq 0 ]]; then # Check remoto se il push fallisce perche non esiste
-            echo "Tag $TAG not found remotely. Creating and pushing it."
-            git tag $TAG  # Crea il tag localmente
-            git push --tags origin $TAG # Tenta di pushare di nuovo
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
-          else
-            echo "Tag $TAG already exists remotely. Skipping creation."
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
-          fi
-          echo "Tag value: ${{ steps.get_tag.outputs.tag }}"
+      - name: Get existing release ID (if any)
+        id: get_release_id
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const tag = '${{ steps.get_tag.outputs.tag }}';
+            return github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: tag,
+            }).then(result => result.data.id).catch(error => {
+                if (error.status === 404) {
+                    return null; // Release doesn't exist
+                }
+                throw error; // Re-throw other errors
+            });
 
       - name: Create or update Release
         id: create_release
@@ -42,11 +46,11 @@ jobs:
         with:
           tag_name: ${{ steps.get_tag.outputs.tag }}
           release_name: Release ${{ steps.get_tag.outputs.tag }}
-          body: |
-            Aggiornamento della release.
+          body: Aggiornamento della release.
           draft: false
           prerelease: false
-          update_if_exists: true # La chiave per l'aggiornamento
+          release_id: ${{ steps.get_release_id.outputs.result }} # <--- ID per l'update
+        if: github.event_name == 'push'
 
       - name: Debug Release creation result
         if: steps.create_release.outcome == 'failure'
