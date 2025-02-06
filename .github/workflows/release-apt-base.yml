@@ -10,7 +10,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Debug: Branch
+      - name: Debug Branch
         run: echo "Push event on branch ${{ github.ref }}"
 
       - name: Get or create tag
